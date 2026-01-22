@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-2">Inscrição concluída ✅</h1>
+          <p class="mb-4">Obrigado, <strong>{{ cliente.nome }}</strong>! Sua inscrição foi registrada.</p>
+
+          <div class="alert alert-info mb-4">
+            <div><strong>Curso:</strong> {{ agendamento.curso.nome }}</div>
+            <div><strong>Data:</strong> {{ agendamento.data|date:"d/m/Y" }}</div>
+          </div>
+
+          <p class="mb-0">
+            Seu certificado será gerado e enviado para o e-mail <strong>{{ cliente.email }}</strong>
+            após a confirmação pelo administrador.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

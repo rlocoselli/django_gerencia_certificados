@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Novo certificado</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Gerar certificado</button>
+    </form>
+    <p><a href="{% url 'certificados:listar_certificados' %}">Voltar para a lista</a></p>
+</div>
+{% endblock %}

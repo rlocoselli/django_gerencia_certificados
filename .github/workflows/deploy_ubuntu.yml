@@ -1,0 +1,73 @@
+name: Deploy on Ubuntu (self-hosted)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install OS packages (apt)
+        shell: bash
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y rsync nginx openssl python3 python3-venv python3-pip curl gnupg ca-certificates lsb-release unixodbc-dev
+
+          # Microsoft ODBC Driver 18 for SQL Server (Ubuntu)
+          curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+
+          # Certbot (optional - for HTTPS)
+          sudo apt-get install -y certbot python3-certbot-nginx
+
+      - name: Write environment file (/etc/djangoapp.env)
+        shell: bash
+        run: |
+          set -e
+          sudo tee /etc/djangoapp.env >/dev/null <<'EOF'
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_DEBUG=${{ secrets.DJANGO_DEBUG }}
+          DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}
+          DJANGO_CSRF_TRUSTED_ORIGINS=${{ secrets.DJANGO_CSRF_TRUSTED_ORIGINS }}
+          SITE_URL=${{ secrets.SITE_URL }}
+
+          DB_ENGINE=mssql
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_DRIVER=ODBC Driver 18 for SQL Server
+          DB_EXTRA_PARAMS=Encrypt=yes;TrustServerCertificate=no;
+
+          SMTP_HOST=${{ secrets.SMTP_HOST }}
+          SMTP_PORT=${{ secrets.SMTP_PORT }}
+          SMTP_USER=${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+          SMTP_USE_TLS=${{ secrets.SMTP_USE_TLS }}
+          SMTP_USE_SSL=${{ secrets.SMTP_USE_SSL }}
+          DEFAULT_FROM_EMAIL=${{ secrets.DEFAULT_FROM_EMAIL }}
+
+          DOMAIN=${{ secrets.DOMAIN }}
+          CERTBOT_EMAIL=${{ secrets.CERTBOT_EMAIL }}
+          EOF
+          sudo chmod 600 /etc/djangoapp.env
+
+      - name: Deploy + start app (gunicorn on 8080) + configure nginx
+        shell: bash
+        run: |
+          set -e
+          chmod +x scripts/deploy_ubuntu.sh
+          # export DOMAIN/CERTBOT_EMAIL for the script
+          set +u
+          source /etc/djangoapp.env
+          set -u
+          ./scripts/deploy_ubuntu.sh

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h4 mb-3">Inscrição no curso</h1>
+
+          {% if agendamento %}
+            <div class="alert alert-info">
+              <div><strong>Curso:</strong> {{ agendamento.curso.nome }}</div>
+              <div><strong>Data:</strong> {{ agendamento.data|date:"d/m/Y" }}</div>
+              {% if agendamento.curso.carga_horaria_padrao %}
+                <div><strong>Carga horária:</strong> {{ agendamento.curso.carga_horaria_padrao }}h</div>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="alert alert-warning">
+              Agendamento não encontrado. Verifique o link/QR Code.
+            </div>
+          {% endif %}
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="agendamento" value="{{ agendamento_id }}">
+            {% for field in form %}
+              <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                  <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+            {% if agendamento %}
+              <button type="submit" class="btn btn-primary w-100">Finalizar inscrição</button>
+            {% else %}
+              <button type="button" class="btn btn-secondary w-100" disabled>Finalizar inscrição</button>
+            {% endif %}
+          </form>
+
+          <div class="text-muted small mt-3">
+            Seus dados serão usados apenas para emissão e envio do certificado.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Aplica classes Bootstrap aos inputs renderizados pelo Django
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if (!el.classList.contains('form-control') && el.type !== 'hidden' && el.type !== 'checkbox' && el.type !== 'radio') {
+      el.classList.add('form-control');
+    }
+  });
+</script>
+{% endblock %}

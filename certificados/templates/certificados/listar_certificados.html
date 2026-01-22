@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Certificados</h1>
+    <p><a href="{% url 'certificados:criar_certificado' %}">+ Novo certificado</a></p>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Aluno</th>
+                <th>Curso</th>
+                <th>Carga horária</th>
+                <th>Data</th>
+                <th>Visualizar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in certificados %}
+            <tr>
+                <td>{{ c.cliente.nome }}</td>
+                <td>{{ c.curso.nome }}</td>
+                <td>{{ c.carga_horaria }} h</td>
+                <td>{{ c.data_emissao|date:"d/m/Y" }}</td>
+                <td><a href="{% url 'certificados:visualizar_certificado' c.pk %}" target="_blank">Certificado</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Nenhum certificado emitido ainda.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

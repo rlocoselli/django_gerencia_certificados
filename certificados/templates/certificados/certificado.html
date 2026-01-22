@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificado - {{ certificado.cliente.nome }}</title>
+    <style>
+        @page { size: A4 landscape; margin: 0; }
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .cert-wrapper {
+            position: relative;
+            width: 1123px;
+            height: 794px;
+            margin: 0 auto;
+            background-image: url("{% static 'certificados/img/certificado_base.png' %}");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .nome-aluno {
+            position: absolute;
+            top: 45%;
+            width: 100%;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #0050b8;
+        }
+        .texto-curso {
+            position: absolute;
+            top: 58%;
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            padding: 0 160px;
+            box-sizing: border-box;
+        }
+        .dados-rodape {
+            position: absolute;
+            bottom: 15%;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="cert-wrapper">
+    <div class="nome-aluno">
+        {{ certificado.cliente.nome }}
+    </div>
+    <div class="texto-curso">
+        Participou do {{ certificado.curso.nome }} com carga de {{ certificado.curso.carga_horaria_padrao }} horas,
+        realizado pela Lean Way Consulting.
+    </div>
+    <div class="dados-rodape">
+        Emitido em {{ certificado.data_emissao|date:"d/m/Y" }} | Código: {{ certificado.codigo }}
+    </div>
+</div>
+</body>
+</html>
