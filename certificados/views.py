@@ -60,13 +60,9 @@ def inscricao_publica(request):
                     curso=agendamento.curso,
                     agendamento=agendamento,
                 )
-                try:
-                    pdf_bytes = gerar_certificado_pdf_bytes(certificado)
-                    enviar_certificado_email(certificado, pdf_bytes)
-                    messages.success(request, 'Inscrição realizada! Enviamos o certificado por e-mail.')
-                except Exception as ex:
-                    # Não bloqueia a inscrição caso o e-mail falhe
-                    messages.warning(request, f'Inscrição realizada, mas não foi possível enviar o certificado por e-mail: {ex}')
+                pdf_bytes = gerar_certificado_pdf_bytes(certificado)
+                enviar_certificado_email(certificado, pdf_bytes)
+                messages.success(request, 'Inscrição realizada! Enviamos o certificado por e-mail.')
 
                 return render(request, 'certificados/inscricao_sucesso.html', {'agendamento': agendamento, 'cliente': cliente, 'certificado': certificado})
     else:

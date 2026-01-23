@@ -67,7 +67,8 @@ DATABASES = {
         'PASSWORD': env('DB_PASSWORD', ''),
         'OPTIONS': {
             'driver': env('DB_DRIVER', 'ODBC Driver 18 for SQL Server'),
-            'extra_params': env('DB_EXTRA_PARAMS', 'Encrypt=yes;TrustServerCertificate=no;'),
+            'host_is_server': True
+            'extra_params': 'Encrypt=yes;TrustServerCertificate=no;'
         },
     }
 }
