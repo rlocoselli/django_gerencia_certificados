@@ -21,9 +21,17 @@
             </div>
           {% endif %}
 
-          <form method="post" novalidate>
+          <form method="post" novalidate id="inscricao-form">
             {% csrf_token %}
             <input type="hidden" name="agendamento" value="{{ agendamento_id }}">
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {% for err in form.non_field_errors %}
+                  <div>{{ err }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
             {% for field in form %}
               <div class="mb-3">
                 <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -36,15 +44,38 @@
                 {% endfor %}
               </div>
             {% endfor %}
-            {% if agendamento %}
-              <button type="submit" class="btn btn-primary w-100">Finalizar inscrição</button>
-            {% else %}
-              <button type="button" class="btn btn-secondary w-100" disabled>Finalizar inscrição</button>
-            {% endif %}
+
+            {# ===== LGPD consent ===== #}
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="lgpd_consent" name="lgpd_consent" required>
+                <label class="form-check-label" for="lgpd_consent">
+                  Eu li e concordo com o tratamento dos meus dados pessoais para fins de inscrição e emissão do certificado.
+                </label>
+              </div>
+              <div class="form-text">
+                Finalidade: inscrição, controle de presença e emissão/envio de certificado.
+                Base legal: execução de contrato/serviço solicitado e consentimento quando aplicável.
+                Retenção: somente pelo tempo necessário para comprovação e emissão.
+                Você pode solicitar acesso, correção e exclusão conforme a LGPD.
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              {% if agendamento %}
+                <button type="submit" class="btn btn-primary w-100" id="submit-btn">Finalizar inscrição</button>
+              {% else %}
+                <button type="button" class="btn btn-secondary w-100" disabled>Finalizar inscrição</button>
+              {% endif %}
+            </div>
           </form>
 
           <div class="text-muted small mt-3">
-            Seus dados serão usados apenas para emissão e envio do certificado.
+            Seus dados serão usados apenas para inscrição, emissão e envio do certificado.
+          </div>
+
+          <div class="alert alert-secondary small mt-3 mb-0">
+            <strong>Contato LGPD:</strong> Para exercer seus direitos (acesso, correção, exclusão), entre em contato com o responsável pelo curso.
           </div>
         </div>
       </div>
@@ -53,11 +84,82 @@
 </div>
 
 <script>
-  // Aplica classes Bootstrap aos inputs renderizados pelo Django
+
+  // Bootstrap classes
   document.querySelectorAll('input, select, textarea').forEach(el => {
-    if (!el.classList.contains('form-control') && el.type !== 'hidden' && el.type !== 'checkbox' && el.type !== 'radio') {
+    if (!el.classList.contains('form-control')
+        && el.type !== 'hidden'
+        && el.type !== 'checkbox'
+        && el.type !== 'radio') {
       el.classList.add('form-control');
     }
   });
+
+  // === CPF auto-fill on blur ===
+  (function() { 
+
+    const form = document.getElementById('inscricao-form');
+    if (!form) return;
+
+    const cpfInput = form.querySelector('[name="cpf"]');
+    if (!cpfInput) return;
+
+    // helper: keep only digits
+    function onlyDigits(v) { return (v || '').replace(/\D/g, ''); }
+
+    // map backend fields -> your form input names
+    // Ajuste conforme seus campos reais no form:
+    const fieldMap = {
+      nome: 'nome',
+      email: 'email',
+      telefone: 'telefone',
+      data_nascimento: 'data_nascimento',
+      endereco: 'endereco'
+    };
+
+    let lastCpf = null;
+
+    cpfInput.addEventListener('blur', async () => {
+      const cpf = onlyDigits(cpfInput.value);
+      if (!cpf || cpf.length !== 11) return;
+      if (cpf === lastCpf) return;
+      lastCpf = cpf;
+
+      try {
+        const url = `/api/aluno-por-cpf/?cpf=${encodeURIComponent(cpf)}`;
+        const resp = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          },
+          credentials: 'same-origin'
+        });
+
+        if (resp.status === 404) {
+          // não existe -> não faz nada
+          return;
+        }
+
+        if (!resp.ok) {
+          console.warn('CPF lookup failed:', resp.status);
+          return;
+        }
+
+        const data = await resp.json();
+
+        // auto-fill only empty fields (to avoid overwriting user's edits)
+        Object.entries(fieldMap).forEach(([apiKey, inputName]) => {
+          const input = form.querySelector(`[name="${inputName}"]`);
+          if (!input) return;
+          if (input.value && input.value.trim() !== '') return; // don't overwrite
+          if (data[apiKey] == null) return;
+          input.value = data[apiKey];
+        });
+
+      } catch (e) {
+        console.warn('CPF lookup error:', e);
+      }
+    });
+  })();
 </script>
 {% endblock %}

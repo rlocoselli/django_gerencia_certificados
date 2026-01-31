@@ -4,7 +4,7 @@ import uuid
 
 
 class Cliente(models.Model):
-    cpf = models.CharField('CPF', max_length=14, unique=True)
+    cpf = models.CharField('CPF', max_length=14)
     nome = models.CharField('Nome', max_length=200)
     email = models.EmailField('E-mail', max_length=254)
     data_nascimento = models.DateField('Data de nascimento')
