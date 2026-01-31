@@ -13,7 +13,7 @@ DEBUG = env("DJANGO_DEBUG", "0").lower() in ("1", "true", "yes", "on")
 # Hosts / site
 ALLOWED_HOSTS = [h.strip() for h in env("DJANGO_ALLOWED_HOSTS", "*").split(",") if h.strip()]
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in env("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
-SITE_URL = env("SITE_URL", "http://localhost:8080")
+SITE_URL = env("SITE_URL", "https://leanway-consultores.eastus2.cloudapp.azure.com/")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
