@@ -99,5 +99,14 @@ EMAIL_USE_TLS = env('SMTP_USE_TLS', '1').lower() in ('1','true','yes','on')
 EMAIL_USE_SSL = env('SMTP_USE_SSL', '0').lower() in ('1','true','yes','on')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
+MS_GRAPH_TENANT_ID = env('TENANT', '')
+MS_GRAPH_CLIENT_ID = env('CLIENT', '')
+MS_GRAPH_CLIENT_SECRET = env('SECRET', '')
+
+MS_GRAPH_SENDER = "certificado@leanway.com.br"
+
+DEFAULT_FROM_EMAIL = "certificado@leanway.com.br"
+
+
 # Optional: tighten security behind nginx (set these in prod)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

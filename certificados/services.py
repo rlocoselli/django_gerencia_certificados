@@ -11,12 +11,15 @@ from reportlab.lib.utils import ImageReader
 from django.contrib.staticfiles import finders
 
 import qrcode
+import requests
+import msal
+
 
 from .models import Certificado
 
 
 def montar_url_inscricao(agendamento_id):
-    base = getattr(settings, 'SITE_URL', 'http://localhost:8000').rstrip('/')
+    base = getattr(settings, 'SITE_URL', 'https://leanway-consultores.eastus2.cloudapp.azure.com/').rstrip('/')
     return f"{base}{reverse('certificados:inscricao')}?agendamento={agendamento_id}"
 
 
@@ -83,25 +86,79 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     return buffer.getvalue()
 
 
+def _graph_get_token() -> str:
+    tenant_id = getattr(settings, "MS_GRAPH_TENANT_ID", None)
+    client_id = getattr(settings, "MS_GRAPH_CLIENT_ID", None)
+    client_secret = getattr(settings, "MS_GRAPH_CLIENT_SECRET", None)
+
+    if not all([tenant_id, client_id, client_secret]):
+        raise RuntimeError(
+            "Configure MS_GRAPH_TENANT_ID, MS_GRAPH_CLIENT_ID, MS_GRAPH_CLIENT_SECRET no settings.py"
+        )
+
+    app = msal.ConfidentialClientApplication(
+        client_id=client_id,
+        authority=f"https://login.microsoftonline.com/{tenant_id}",
+        client_credential=client_secret,
+    )
+
+    result = app.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
+    if "access_token" not in result:
+        raise RuntimeError(f"Erro ao obter token Graph: {result}")
+    return result["access_token"]
+
+
 def enviar_certificado_email(certificado: Certificado, pdf_bytes: bytes) -> None:
+    """
+    Envia e-mail via Microsoft Graph (OAuth2) com PDF anexado.
+    Requer permission: Microsoft Graph -> Application -> Mail.Send + admin consent.
+    """
     cliente = certificado.cliente
     curso = certificado.curso
 
+    sender = getattr(settings, "MS_GRAPH_SENDER", None) or getattr(settings, "DEFAULT_FROM_EMAIL", None)
+    if not sender:
+        raise RuntimeError("Configure MS_GRAPH_SENDER (ou DEFAULT_FROM_EMAIL) no settings.py")
+
     assunto = f"Seu certificado - {curso.nome}"
-    corpo = (
+    corpo_texto = (
         f"Olá, {cliente.nome}!\n\n"
         f"Segue em anexo o seu certificado do curso {curso.nome}.\n"
     )
 
-    email_from = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or getattr(settings, 'EMAIL_HOST_USER', None)
-    if not email_from:
-        raise RuntimeError('Configure DEFAULT_FROM_EMAIL (ou EMAIL_HOST_USER) no settings.py para enviar e-mails.')
+    token = _graph_get_token()
 
-    msg = EmailMessage(
-        subject=assunto,
-        body=corpo,
-        from_email=email_from,
-        to=[cliente.email],
-    )
-    msg.attach(f"certificado_{certificado.codigo}.pdf", pdf_bytes, 'application/pdf')
-    msg.send(fail_silently=False)
+    # Graph sendMail exige anexos em base64
+    attachment_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
+    filename = f"certificado_{certificado.codigo}.pdf"
+
+    payload = {
+        "message": {
+            "subject": assunto,
+            "body": {
+                "contentType": "Text",
+                "content": corpo_texto,
+            },
+            "toRecipients": [
+                {"emailAddress": {"address": cliente.email}}
+            ],
+            "attachments": [
+                {
+                    "@odata.type": "#microsoft.graph.fileAttachment",
+                    "name": filename,
+                    "contentType": "application/pdf",
+                    "contentBytes": attachment_b64,
+                }
+            ],
+        },
+        "saveToSentItems": True,
+    }
+
+    url = f"https://graph.microsoft.com/v1.0/users/{sender}/sendMail"
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+    r = requests.post(url, headers=headers, json=payload, timeout=30)
+
+    # 202 = OK (Accepted)
+    if r.status_code != 202:
+        raise RuntimeError(f"Graph sendMail falhou: {r.status_code} - {r.text}")
