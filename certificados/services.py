@@ -13,6 +13,9 @@ from django.contrib.staticfiles import finders
 import qrcode
 import requests
 import msal
+from datetime import date
+import locale
+
 
 
 from .models import Certificado
@@ -53,6 +56,13 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     cliente = certificado.cliente
     curso = certificado.curso
     carga = curso.carga_horaria_padrao or 0
+    try:
+        locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
+    except locale.Error:
+        pass
+
+    data_atual = date.today()
+    data_formatada = data_atual.strftime("%d de %B de %Y")
 
     # 1) Background (template)
     template_rel = "certificados/img/certificado_base.png"
@@ -80,6 +90,10 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     # CARGA HORÁRIA
     c.setFont("Helvetica", 16)
     c.drawCentredString(page_w / 2, 265, f"Carga horária: {carga} horas")
+
+    # DATA ATUAL
+    c.setFont("Helvetica", 14)
+    c.drawCentredString(page_w / 2, 235, f"Data: {data_formatada}")
 
     c.showPage()
     c.save()
