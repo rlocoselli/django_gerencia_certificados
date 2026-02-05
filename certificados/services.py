@@ -62,7 +62,7 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
         pass
 
     data_atual = date.today()
-    data_formatada = data_atual.strftime("%d de %B de %Y")
+    data_formatada = data_atual.strftime("%d/%m/%Y")
 
     # 1) Background (template)
     template_rel = "certificados/img/certificado_base.png"
@@ -93,7 +93,7 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
 
     # DATA ATUAL
     c.setFont("Helvetica", 14)
-    c.drawCentredString(page_w / 2, 235, f"Data: {data_formatada}")
+    c.drawCentredString(page_w / 2, 235, f"{data_formatada}")
 
     c.showPage()
     c.save()
