@@ -68,7 +68,7 @@ DATABASES = {
         'OPTIONS': {
             'driver': env('DB_DRIVER', 'ODBC Driver 18 for SQL Server'),
             'host_is_server': True,
-            'extra_params': 'Encrypt=yes;TrustServerCertificate=no;'
+            'extra_params': 'Encrypt=yes;TrustServerCertificate=no; loginTimeout=60;Connection Timeout=60;'
         },
     }
 }

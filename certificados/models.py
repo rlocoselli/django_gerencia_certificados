@@ -10,6 +10,7 @@ class Cliente(models.Model):
     data_nascimento = models.DateField('Data de nascimento')
     telefone = models.CharField('Telefone', max_length=20, blank=True)
     endereco = models.CharField('Endereço', max_length=255, blank=True)
+    empresa = models.CharField('Empresa', max_length=200)
 
     class Meta:
         verbose_name = 'Cliente'
