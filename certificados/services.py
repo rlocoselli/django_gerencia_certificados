@@ -65,7 +65,7 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     data_formatada = data_atual.strftime("%d/%m/%Y")
 
     # 1) Background (template)
-    template_rel = "certificados/img/certificado_base_2.png"
+    template_rel = "certificados/img/certificado_base.png"
     template_path = finders.find(template_rel)
     if not template_path:
         raise FileNotFoundError(
