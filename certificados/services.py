@@ -7,7 +7,7 @@ from django.urls import reverse
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
-
+from reportlab.lib import colors
 from django.contrib.staticfiles import finders
 
 import qrcode
@@ -80,16 +80,17 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     # Observação: (0,0) é canto inferior esquerdo.
 
     # NOME (bem grande, centralizado)
+    c.setFillColor(colors.HexColor("#13375f"))
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
     # CURSO
     c.setFont("Helvetica", 18)
-    c.drawCentredString(page_w / 2, 290, f"Curso: {curso.nome}")
+    c.drawCentredString(page_w / 2, 290, f"Participou do {curso.nome} com")
 
     # CARGA HORÁRIA
     c.setFont("Helvetica", 16)
-    c.drawCentredString(page_w / 2, 265, f"Carga horária: {carga} horas")
+    c.drawCentredString(page_w / 2, 265, f"carga de {carga} horas, realizado pela Lean Way Consulting")
 
     # DATA ATUAL
     c.setFont("Helvetica", 14)
