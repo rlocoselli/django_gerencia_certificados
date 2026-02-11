@@ -80,7 +80,7 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     # Observação: (0,0) é canto inferior esquerdo.
 
     # NOME (bem grande, centralizado)
-    c.setFillColor(colors.HexColor("#13375f"))
+    #c.setFillColor(colors.HexColor("#13375f"))
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
