@@ -1,0 +1,353 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls static %}
+
+{% block title %}Dashboard de Avaliações - Admin{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .dashboard-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 20px;
+      margin: -20px -20px 30px -20px;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .dashboard-header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #667eea;
+    }
+
+    .stat-card h3 {
+      margin: 0 0 10px 0;
+      color: #2d3748;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.7;
+    }
+
+    .stat-card .value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .stat-card p {
+      margin: 10px 0 0 0;
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .dashboard-section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table-responsive {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .table-responsive table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table-responsive th {
+      background: #f7fafc;
+      padding: 15px;
+      text-align: left;
+      color: #2d3748;
+      font-weight: 600;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table-responsive td {
+      padding: 15px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-responsive tbody tr:hover {
+      background: #f7fafc;
+    }
+
+    .table-responsive tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .media-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .media-badge.excelente {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .media-badge.bom {
+      background: #bee3f8;
+      color: #2c5282;
+    }
+
+    .media-badge.regular {
+      background: #feebc8;
+      color: #7c2d12;
+    }
+
+    .media-badge.baixo {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .chart-container h3 {
+      margin-top: 0;
+      color: #2d3748;
+    }
+
+    .action-links {
+      display: flex;
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+
+    .action-links a {
+      color: #667eea;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      transition: all 0.3s;
+    }
+
+    .action-links a:hover {
+      background: #e6f0ff;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #718096;
+    }
+
+    .empty-state p {
+      margin: 10px 0;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <h1>📊 Dashboard de Avaliações</h1>
+  <p>Painel de controle de respostas de questionários</p>
+</div>
+
+<!-- Estatísticas Gerais -->
+<div class="dashboard-stats">
+  <div class="stat-card">
+    <h3>Questionários</h3>
+    <div class="value">{{ total_questionarios }}</div>
+    <p>Formulários cadastrados</p>
+  </div>
+
+  <div class="stat-card">
+    <h3>Respostas Recebidas</h3>
+    <div class="value">{{ total_respostas }}</div>
+    <p>Avaliações respondidas</p>
+  </div>
+
+  <div class="stat-card">
+    <h3>Total de Perguntas</h3>
+    <div class="value">{{ total_perguntas }}</div>
+    <p>Questões cadastradas</p>
+  </div>
+</div>
+
+<!-- Respostas por Questionário -->
+{% if respostas_por_questionario %}
+<div class="dashboard-section">
+  <h2 class="section-title">📝 Respostas por Questionário</h2>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Questionário</th>
+          <th>Total de Respostas</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in respostas_por_questionario %}
+        <tr>
+          <td><strong>{{ q.titulo }}</strong></td>
+          <td>
+            <span style="font-size: 1.2rem; font-weight: bold; color: #667eea;">
+              {{ q.num_respostas }}
+            </span>
+          </td>
+          <td>
+            <div class="action-links">
+              <a href="/admin/certificados/respostausuario/?questionario__id__exact={{ q.id }}">Ver Respostas</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="dashboard-section">
+  <h2 class="section-title">📝 Respostas por Questionário</h2>
+  <div class="empty-state">
+    <p>Nenhuma resposta registrada ainda.</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Médias por Questionário -->
+{% if medias_por_questionario %}
+<div class="dashboard-section">
+  <h2 class="section-title">⭐ Médias de Avaliação</h2>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Questionário</th>
+          <th>Média Geral</th>
+          <th>Total de Respostas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in medias_por_questionario %}
+        <tr>
+          <td><strong>{{ item.questionario }}</strong></td>
+          <td>
+            {% if item.media >= 3.5 %}
+              <span class="media-badge excelente">{{ item.media }} ⭐</span>
+            {% elif item.media >= 2.5 %}
+              <span class="media-badge bom">{{ item.media }} ⭐</span>
+            {% elif item.media >= 1.5 %}
+              <span class="media-badge regular">{{ item.media }} ⚠️</span>
+            {% else %}
+              <span class="media-badge baixo">{{ item.media }} ❌</span>
+            {% endif %}
+          </td>
+          <td>{{ item.total_respostas }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top: 15px; color: #718096; font-size: 0.9rem;">
+    <strong>Escala:</strong> 1 = Fraco | 2 = Regular | 3 = Bom | 4 = Ótimo
+  </p>
+</div>
+{% endif %}
+
+<!-- Últimas Respostas -->
+{% if ultimas_respostas %}
+<div class="dashboard-section">
+  <h2 class="section-title">🆕 Últimas Respostas</h2>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Questionário</th>
+          <th>Data de Resposta</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for resposta in ultimas_respostas %}
+        <tr>
+          <td>
+            <strong>{{ resposta.cliente.nome }}</strong><br>
+            <small style="color: #718096;">{{ resposta.cliente.email }}</small>
+          </td>
+          <td>{{ resposta.questionario.titulo }}</td>
+          <td>
+            <small style="color: #718096;">
+              {{ resposta.respondido_em|date:"d/m/Y H:i" }}
+            </small>
+          </td>
+          <td>
+            <div class="action-links">
+              <a href="/admin/certificados/respostausuario/{{ resposta.id }}/change/">Ver Detalhes</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Atalhos de Administração -->
+<div class="dashboard-section">
+  <h2 class="section-title">⚙️ Administração</h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+    <a href="/admin/certificados/questionario/" style="padding: 20px; background: white; border-radius: 8px; text-decoration: none; border: 2px solid #e2e8f0; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.5rem;">📋</span>
+      <div>
+        <strong style="color: #2d3748;">Questionários</strong>
+        <p style="margin: 0; font-size: 0.85rem; color: #718096;">Gerenciar formulários</p>
+      </div>
+    </a>
+    <a href="/admin/certificados/respostausuario/" style="padding: 20px; background: white; border-radius: 8px; text-decoration: none; border: 2px solid #e2e8f0; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.5rem;">📊</span>
+      <div>
+        <strong style="color: #2d3748;">Respostas</strong>
+        <p style="margin: 0; font-size: 0.85rem; color: #718096;">Ver todas as respostas</p>
+      </div>
+    </a>
+    <a href="/admin/certificados/pergunta/" style="padding: 20px; background: white; border-radius: 8px; text-decoration: none; border: 2px solid #e2e8f0; transition: all 0.3s; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 1.5rem;">❓</span>
+      <div>
+        <strong style="color: #2d3748;">Perguntas</strong>
+        <p style="margin: 0; font-size: 0.85rem; color: #718096;">Gerenciar perguntas</p>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .questionario-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .questionario-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 20px;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .questionario-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+  
+  .questionario-header p {
+    margin: 10px 0 0 0;
+    font-size: 1.1rem;
+    opacity: 0.95;
+  }
+  
+  .questao-grupo {
+    margin-bottom: 40px;
+    padding: 25px;
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    border-radius: 4px;
+  }
+  
+  .questao-titulo {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #2d3748;
+  }
+  
+  .form-check {
+    margin-bottom: 12px;
+  }
+  
+  .form-check-input {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    margin-top: 3px;
+  }
+  
+  .form-check-label {
+    cursor: pointer;
+    margin-left: 8px;
+    user-select: none;
+    font-size: 1rem;
+  }
+  
+  .form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+  }
+  
+  .form-control {
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    padding: 12px;
+    font-size: 1rem;
+  }
+  
+  .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+  
+  .botoes-acao {
+    margin-top: 40px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  
+  .btn-enviar {
+    background-color: #667eea;
+    color: white;
+    padding: 12px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-enviar:hover {
+    background-color: #764ba2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+  
+  .btn-enviar:active {
+    transform: translateY(0);
+  }
+  
+  .btn-cancelar {
+    background-color: #e2e8f0;
+    color: #2d3748;
+    padding: 12px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  .btn-cancelar:hover {
+    background-color: #cbd5e0;
+  }
+  
+  .info-curso {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 30px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .info-curso p {
+    margin: 8px 0;
+    color: #4a5568;
+  }
+  
+  .info-curso strong {
+    color: #2d3748;
+  }
+  
+  .progress-bar-container {
+    margin-bottom: 30px;
+    background: white;
+    padding: 15px;
+    border-radius: 4px;
+  }
+  
+  .progress {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  
+  .formulario-errors {
+    background: #fed7d7;
+    border: 1px solid #fc8181;
+    color: #c53030;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  
+  .formulario-errors ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  
+  .formulario-errors li {
+    margin: 5px 0;
+  }
+</style>
+
+<div class="container py-5 questionario-container">
+  <!-- Header do Questionário -->
+  <div class="questionario-header">
+    <h1>{{ questionario.titulo }}</h1>
+    <p>Sua opinião é importante para nós!</p>
+  </div>
+
+  <!-- Informações do Curso -->
+  <div class="info-curso">
+    <p><strong>Curso:</strong> {{ curso.nome }}</p>
+    <p><strong>Aluno:</strong> {{ cliente.nome }}</p>
+  </div>
+
+  <!-- Formulário -->
+  <form method="post" class="formulario-questionario">
+    {% csrf_token %}
+
+    <!-- Mostrar erros do formulário, se houver -->
+    {% if form.non_field_errors %}
+    <div class="formulario-errors">
+      <strong>Erro ao processar o formulário:</strong>
+      <ul>
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Perguntas -->
+    {% for field in form %}
+      {% if field.name != "csrfmiddlewaretoken" %}
+      <div class="questao-grupo">
+        {% if field.field.widget.input_type == "radio" %}
+          <!-- Perguntas com RadioSelect -->
+          <div class="questao-titulo">{{ field.label }}</div>
+          {% for radio in field %}
+            <div class="form-check">
+              {{ radio.tag }}
+              <label class="form-check-label" for="{{ radio.id_for_label }}">
+                {{ radio.choice_label }}
+              </label>
+            </div>
+          {% endfor %}
+        {% else %}
+          <!-- Campo de texto aberto ou outro tipo -->
+          <label for="{{ field.id_for_label }}" class="questao-titulo">{{ field.label }}</label>
+          {{ field }}
+        {% endif %}
+
+        <!-- Mostrar erros específicos do campo -->
+        {% if field.errors %}
+        <div class="alert alert-danger mt-2" role="alert">
+          {% for error in field.errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    <!-- Botões de Ação -->
+    <div class="botoes-acao">
+      <button type="submit" class="btn-enviar">Enviar Respostas</button>
+      <a href="{% url 'certificados:listar_certificados' %}" class="btn-cancelar">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

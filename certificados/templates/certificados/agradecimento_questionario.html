@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .agradecimento-container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .agradecimento-header {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 60px 20px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .agradecimento-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+  }
+  
+  .agradecimento-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+  
+  .agradecimento-header p {
+    margin: 15px 0 0 0;
+    font-size: 1.1rem;
+    opacity: 0.95;
+  }
+  
+  .agradecimento-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+  }
+  
+  .agradecimento-content h2 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .agradecimento-content p {
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 15px;
+  }
+  
+  .info-resumo {
+    background: #f7fafc;
+    padding: 15px;
+    border-left: 4px solid #48bb78;
+    border-radius: 4px;
+    margin: 20px 0;
+  }
+  
+  .info-resumo-item {
+    margin: 8px 0;
+    color: #2d3748;
+  }
+  
+  .info-resumo-item strong {
+    color: #1a202c;
+  }
+  
+  .botoes-acao {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+  }
+  
+  .btn-primario {
+    background-color: #48bb78;
+    color: white;
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  .btn-primario:hover {
+    background-color: #38a169;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+  }
+  
+  .btn-secundario {
+    background-color: #e2e8f0;
+    color: #2d3748;
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  .btn-secundario:hover {
+    background-color: #cbd5e0;
+  }
+  
+  .mensagem-sucesso {
+    background: #c6f6d5;
+    border: 1px solid #9ae6b4;
+    color: #22543d;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+</style>
+
+<div class="container py-5 agradecimento-container">
+  <!-- Header de Agradecimento -->
+  <div class="agradecimento-header">
+    <div class="agradecimento-icon">✅</div>
+    <h1>Obrigado!</h1>
+    <p>Sua avaliação foi registrada com sucesso</p>
+  </div>
+
+  <!-- Conteúdo -->
+  <div class="agradecimento-content">
+    <h2>Apreciamos seu feedback!</h2>
+    
+    <p>
+      Olá <strong>{{ cliente.nome }}</strong>,
+    </p>
+    
+    <p>
+      Sua resposta ao questionário foi registrada com sucesso. Suas sugestões e opiniões são 
+      extremamente valiosas para nós e nos ajudam a melhorar continuamente a qualidade de nossos 
+      cursos e serviços.
+    </p>
+    
+    <div class="info-resumo">
+      <h3 style="margin-top: 0; color: #2d3748;">Resumo</h3>
+      <div class="info-resumo-item">
+        <strong>Aluno:</strong> {{ cliente.nome }}
+      </div>
+      <div class="info-resumo-item">
+        <strong>Curso:</strong> {{ curso.nome }}
+      </div>
+      <div class="info-resumo-item">
+        <strong>Data de conclusão:</strong> {% now "d/m/Y" %}
+      </div>
+    </div>
+    
+    <p>
+      Se você tiver alguma dúvida específica ou comentário adicional, não hesite em entrar em contato 
+      conosco. Estamos sempre à disposição para ouvir você!
+    </p>
+    
+</div>
+{% endblock %}

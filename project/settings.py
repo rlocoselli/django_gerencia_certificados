@@ -57,18 +57,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project.wsgi.application'
 
 # DATABASE (SQL Server via mssql-django + pyodbc)
+# Azure SQL requires user@servername format
+_db_user = env('DB_USER', '')
+_db_host = env('DB_HOST', '')
+if 'database.windows.net' in _db_host and '@' not in _db_user:
+    _db_user = f"{_db_user}@{_db_user}"  # Convert leanway -> leanway@leanway
+
 DATABASES = {
     'default': {
         'ENGINE': env('DB_ENGINE', 'mssql'),
         'NAME': env('DB_NAME', ''),
-        'HOST': env('DB_HOST', ''),
+        'HOST': _db_host,
         'PORT': env('DB_PORT', '1433'),
-        'USER': env('DB_USER', ''),
+        'USER': _db_user,
         'PASSWORD': env('DB_PASSWORD', ''),
         'OPTIONS': {
             'driver': env('DB_DRIVER', 'ODBC Driver 18 for SQL Server'),
             'host_is_server': True,
-            'extra_params': 'Encrypt=yes;TrustServerCertificate=no; loginTimeout=60;Connection Timeout=60;'
+            'extra_params': 'Encrypt=yes;TrustServerCertificate=yes;loginTimeout=60;Connection Timeout=60;'
         },
     }
 }

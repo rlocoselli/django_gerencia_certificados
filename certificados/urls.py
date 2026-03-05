@@ -6,6 +6,8 @@ app_name = 'certificados'
 urlpatterns = [
     # público
     path('inscricao/', views.inscricao_publica, name='inscricao'),
+    path('certificado/<int:certificado_id>/questionario/', views.responder_questionario, name='responder_questionario'),
+    path('certificado/<int:certificado_id>/agradecimento/', views.agradecimento_questionario, name='agradecimento_questionario'),
 
     # telas antigas (opcional)
     path('', views.listar_certificados, name='listar_certificados'),

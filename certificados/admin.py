@@ -4,8 +4,11 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
+from django.db.models import Count, Avg
+from django.template.response import TemplateResponse
 
-from .models import Cliente, Curso, Certificado, CursoAgendamento, Inscricao
+from .models import (Cliente, Curso, Certificado, CursoAgendamento, Inscricao,
+                     Questionario, Pergunta, OpcaoResposta, RespostaUsuario, ItemRespostaUsuario)
 from .services import gerar_certificado_pdf_bytes, enviar_certificado_email, montar_url_inscricao, gerar_qr_code_base64_png
 
 
@@ -139,3 +142,160 @@ class CertificadoAdmin(admin.ModelAdmin):
     list_display = ('cliente', 'curso', 'agendamento', 'data_emissao', 'codigo')
     list_filter = ('curso', 'data_emissao')
     search_fields = ('cliente__nome', 'cliente__cpf', 'cliente__email', 'curso__nome', 'codigo')
+
+
+# ========== Questionário e Avaliações ==========
+
+class OpcaoRespostaInline(admin.TabularInline):
+    model = OpcaoResposta
+    extra = 1
+    fields = ('valor', 'rotulo', 'pontuacao', 'ordem')
+
+
+class PerguntaInline(admin.TabularInline):
+    model = Pergunta
+    extra = 1
+    fields = ('numero', 'texto', 'tipo', 'obrigatoria', 'ordem')
+
+
+@admin.register(Questionario)
+class QuestionarioAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'curso', 'ativo', 'total_perguntas', 'total_respostas')
+    list_filter = ('ativo', 'curso', 'criado_em')
+    search_fields = ('titulo', 'descricao', 'curso__nome')
+    readonly_fields = ('criado_em', 'atualizado_em', 'total_respostas')
+    fields = ('titulo', 'descricao', 'curso', 'ativo', 'criado_em', 'atualizado_em', 'total_respostas')
+    inlines = [PerguntaInline]
+    
+    def total_perguntas(self, obj):
+        return obj.perguntas.count()
+    total_perguntas.short_description = 'Total de Perguntas'
+    
+    def total_respostas(self, obj):
+        return obj.respostas_usuarios.count()
+    total_respostas.short_description = 'Total de Respostas'
+
+
+@admin.register(Pergunta)
+class PerguntaAdmin(admin.ModelAdmin):
+    list_display = ('numero', 'questionario', 'tipo', 'obrigatoria', 'ordem')
+    list_filter = ('tipo', 'obrigatoria', 'questionario')
+    search_fields = ('texto', 'questionario__titulo')
+    readonly_fields = ('questionario',)
+    fields = ('questionario', 'numero', 'texto', 'tipo', 'obrigatoria', 'ordem')
+    inlines = [OpcaoRespostaInline]
+
+
+@admin.register(OpcaoResposta)
+class OpcaoRespostaAdmin(admin.ModelAdmin):
+    list_display = ('pergunta', 'rotulo', 'valor', 'pontuacao', 'ordem')
+    list_filter = ('pergunta__questionario', 'pergunta')
+    search_fields = ('rotulo', 'valor', 'pergunta__texto')
+    readonly_fields = ('pergunta',)
+    fields = ('pergunta', 'valor', 'rotulo', 'pontuacao', 'ordem')
+
+
+class ItemRespostaUsuarioInline(admin.TabularInline):
+    model = ItemRespostaUsuario
+    extra = 0
+    readonly_fields = ('pergunta', 'opcao_resposta', 'resposta_texto')
+    fields = ('pergunta', 'opcao_resposta', 'resposta_texto')
+    can_delete = False
+
+
+@admin.register(RespostaUsuario)
+class RespostaUsuarioAdmin(admin.ModelAdmin):
+    list_display = ('cliente', 'questionario', 'agendamento', 'media_geral', 'respondido_em')
+    list_filter = ('questionario', 'agendamento', 'respondido_em')
+    search_fields = ('cliente__nome', 'cliente__email', 'cliente__cpf', 'questionario__titulo')
+    readonly_fields = ('questionario', 'cliente', 'certificado', 'agendamento', 'respondido_em', 'media_display')
+    fields = ('questionario', 'cliente', 'certificado', 'agendamento', 'respondido_em', 'media_display')
+    inlines = [ItemRespostaUsuarioInline]
+    can_delete = False
+    
+    def media_display(self, obj):
+        media = obj.media_geral
+        if media == 0:
+            return "Questionário com respostas abertas apenas"
+        return format_html('<strong style="color: green; font-size: 1.2em;">{:.2f}</strong>', media)
+    media_display.short_description = 'Média Geral'
+
+
+@admin.register(ItemRespostaUsuario)
+class ItemRespostaUsuarioAdmin(admin.ModelAdmin):
+    list_display = ('resposta_usuario', 'pergunta', 'opcao_resposta', 'resposta_texto_preview')
+    list_filter = ('pergunta__questionario', 'resposta_usuario__respondido_em')
+    search_fields = ('resposta_usuario__cliente__nome', 'pergunta__texto', 'resposta_texto')
+    readonly_fields = ('resposta_usuario', 'pergunta', 'opcao_resposta', 'resposta_texto')
+    can_delete = False
+    
+    def resposta_texto_preview(self, obj):
+        if obj.resposta_texto:
+            preview = obj.resposta_texto[:50]
+            if len(obj.resposta_texto) > 50:
+                preview += "..."
+            return preview
+        return "-"
+    resposta_texto_preview.short_description = 'Resposta (Preview)'
+
+
+# ========== Dashboard Customizado ==========
+
+class DashboardQuestionarioAdmin(admin.AdminSite):
+    site_header = "Dashboard de Avaliações"
+    site_title = "Dashboard"
+    index_title = "Painel de Controle"
+    
+    def index(self, request, extra_context=None):
+        """Exibe o dashboard customizado"""
+        # Estatísticas gerais
+        total_questionarios = Questionario.objects.count()
+        total_respostas = RespostaUsuario.objects.count()
+        total_perguntas = Pergunta.objects.count()
+        
+        # Respostas por questionário
+        respostas_por_questionario = (
+            Questionario.objects.annotate(
+                num_respostas=Count('respostas_usuarios')
+            ).order_by('-num_respostas')[:10]
+        )
+        
+        # Média por questionário (apenas perguntas com opções)
+        medias_por_questionario = []
+        for q in Questionario.objects.all():
+            respostas = q.respostas_usuarios.all()
+            if respostas.exists():
+                medias = [r.media_geral for r in respostas]
+                media_geral = sum(medias) / len(medias) if medias else 0
+                medias_por_questionario.append({
+                    'questionario': q.titulo,
+                    'media': round(media_geral, 2),
+                    'total_respostas': respostas.count()
+                })
+        
+        # Últimas respostas
+        ultimas_respostas = (
+            RespostaUsuario.objects.select_related('cliente', 'questionario')
+            .order_by('-respondido_em')[:10]
+        )
+        
+        extra_context = extra_context or {}
+        extra_context.update({
+            'total_questionarios': total_questionarios,
+            'total_respostas': total_respostas,
+            'total_perguntas': total_perguntas,
+            'respostas_por_questionario': respostas_por_questionario,
+            'medias_por_questionario': medias_por_questionario,
+            'ultimas_respostas': ultimas_respostas,
+        })
+        
+        return super().index(request, extra_context=extra_context)
+
+
+# Registrar sites customizados
+questionnaire_admin_site = DashboardQuestionarioAdmin(name='dashboard')
+
+@admin.action(description="Ver Dashboard de Avaliações")
+def view_dashboard(modeladmin, request, queryset):
+    """Action para redirecionar para o dashboard"""
+    return HttpResponseRedirect('/admin/dashboard/')
