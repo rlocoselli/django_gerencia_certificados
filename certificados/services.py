@@ -86,7 +86,7 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
 
     # CURSO
     c.setFont("Helvetica", 18)
-    c.drawCentredString(page_w / 2, 290, f"Participou do {curso.nome} com")
+    c.drawCentredString(page_w / 2, 290, f"Participou do Workshop {curso.nome} com")
 
     # CARGA HORÁRIA
     c.setFont("Helvetica", 16)
