@@ -21,7 +21,9 @@
 - ✅ `certificados/views.py` - 2 novas views
 - ✅ `certificados/urls.py` - 2 novas rotas
 - ✅ `certificados/admin.py` - Registros e dashboard admin
-- ✅ `certificados/templates/certificados/inscricao_sucesso.html` - Link para avaliação
+- ✅ `certificados/templates/certificados/inscricao.html` - Aviso de questionário obrigatório
+- ✅ `certificados/templates/certificados/questionario.html` - Aviso de envio de certificado após respostas
+- ✅ `certificados/templates/certificados/agradecimento_questionario.html` - Confirmação de envio por e-mail
 - ✅ `project/urls.py` - Dashboard URLs
 
 ### 2️⃣ Clonar no Ambiente de Produção
@@ -82,11 +84,11 @@ sudo systemctl restart seu_app
 3. Submeta
 4. Deve:
    - Criar certificado
-   - Redirecionar para sucesso
-   - Mostrar link "Responder Avaliação"
-5. Clique no link
-6. Responda o formulário
-7. Deve redirecionar para agradecimento
+   - Redirecionar obrigatoriamente para o questionário
+   - Exibir aviso de envio do certificado após responder
+5. Responda e envie o formulário
+6. Deve redirecionar para agradecimento
+7. Deve confirmar envio do certificado por e-mail (ou aviso de pendência)
 8. Verifique em `/admin/dashboard/` → última resposta deve aparecer
 
 ### 8️⃣ Verificações de Segurança
@@ -216,12 +218,12 @@ Editar `certificados/management/commands/load_initial_questions.py`:
 }
 ```
 
-### Mudar Link de Avaliação
+### Mudar Texto do Fluxo Obrigatório
 
-Editar `certificados/templates/certificados/inscricao_sucesso.html`:
+Editar `certificados/templates/certificados/inscricao.html`:
 ```html
-<!-- Linha com url 'certificados:responder_questionario' -->
-<a href="{% url 'certificados:responder_questionario' certificado.id %}">
+<!-- Alerta sobre questionário obrigatório e envio do certificado -->
+<div class="alert alert-primary small" role="alert">
 ```
 
 ### Exportar Respostas

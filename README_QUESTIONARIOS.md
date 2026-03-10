@@ -116,18 +116,18 @@ Método útil:
 
 1. **Inscrição** → `/certificados/inscricao/?agendamento=UUID`
    - Usuário preenche dados pessoais
-   - Certificado é gerado automaticamente
+   - Sistema cria a inscrição e o certificado
+   - Redireciona obrigatoriamente para o questionário
 
-2. **Página de Sucesso** → `/certificados/` com link para avaliação
-   - Template atualizado com botão "Responder Avaliação"
-
-3. **Questionário** → `/certificados/certificado/<id>/questionario/`
+2. **Questionário** → `/certificados/certificado/<id>/questionario/`
    - Formulário dinâmico renderizado
    - Campos de resposta por tipo de pergunta
+   - Aviso de envio do certificado após resposta
    - Validação no cliente e servidor
 
-4. **Agradecimento** → `/certificados/certificado/<id>/agradecimento/`
+3. **Agradecimento** → `/certificados/certificado/<id>/agradecimento/`
    - Mensagem de agradecimento personalizada
+   - Confirmação de envio do certificado para o e-mail cadastrado
    - Exibição de resumo da resposta
 
 ### Salvo no Banco de Dados
@@ -277,7 +277,9 @@ Todos os templates foram desenvolvidos com CSS grid/flexbox para funcionar perfe
 - `project/urls.py` - URLs do dashboard
 
 ### Arquivos Modificados
-- `certificados/templates/certificados/inscricao_sucesso.html` - Botão de avaliação
+- `certificados/templates/certificados/inscricao.html` - Texto do fluxo obrigatório
+- `certificados/templates/certificados/questionario.html` - Aviso de envio após resposta
+- `certificados/templates/certificados/agradecimento_questionario.html` - Confirmação de envio por e-mail
 
 ## 📞 Suporte
 

@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
+from django.urls import reverse
 from .models import (Certificado, CursoAgendamento, Inscricao, Cliente, 
                      Questionario, RespostaUsuario, ItemRespostaUsuario)
 from .forms import CertificadoForm, InscricaoPublicaForm, QuestionarioForm
@@ -93,19 +94,8 @@ def inscricao_publica(request):
             agendamento=agendamento,
         )
 
-        pdf_bytes = gerar_certificado_pdf_bytes(certificado)
-
-        try:
-            enviar_certificado_email(certificado, pdf_bytes)
-            messages.success(request, 'Inscrição realizada! Enviamos o certificado por e-mail.')
-        except Exception:
-            messages.warning(request, 'Inscrição realizada, mas não foi possível enviar o e-mail agora.')
-
-        return render(
-            request,
-            'certificados/inscricao_sucesso.html',
-            {'agendamento': agendamento, 'cliente': cliente, 'certificado': certificado}
-        )
+        # Após gravar a inscrição, o próximo passo obrigatório é o questionário.
+        return redirect('certificados:responder_questionario', certificado_id=certificado.id)
 
     # GET
     form = InscricaoPublicaForm()
@@ -197,8 +187,17 @@ def responder_questionario(request, certificado_id):
                             'resposta_texto': resposta_texto
                         }
                     )
-            
-            return redirect('certificados:agradecimento_questionario', certificado_id=certificado_id)
+
+            # O certificado é enviado somente após o questionário respondido.
+            email_status = 'enviado'
+            try:
+                pdf_bytes = gerar_certificado_pdf_bytes(certificado)
+                enviar_certificado_email(certificado, pdf_bytes)
+            except Exception:
+                email_status = 'pendente'
+
+            agradecimento_url = reverse('certificados:agradecimento_questionario', args=[certificado_id])
+            return redirect(f'{agradecimento_url}?email_status={email_status}')
     else:
         form = QuestionarioForm(questionario)
     
@@ -217,9 +216,11 @@ def agradecimento_questionario(request, certificado_id):
         Certificado.objects.select_related('cliente', 'curso', 'agendamento'),
         pk=certificado_id
     )
+    email_status = request.GET.get('email_status')
     
     return render(request, 'certificados/agradecimento_questionario.html', {
         'certificado': certificado,
         'cliente': certificado.cliente,
-        'curso': certificado.curso
+        'curso': certificado.curso,
+        'email_status': email_status,
     })

@@ -17,20 +17,14 @@
                          │
                          ▼
             ┌──────────────────────────┐
-            │  Gerar Certificado       │
-            │  (PDF + Email)           │
+            │  Criar Inscrição +       │
+            │  Registro de Certificado │
             └────────────┬─────────────┘
                          │
                          ▼
-          ┌────────────────────────────┐
-          │   Página de Sucesso       │  ◄── Link para Questionário
-          │ (inscricao_sucesso.html)  │
-          └────────────┬───────────────┘
-                       │
-                       ▼
          ┌─────────────────────────────────┐
-         │   Sistema de Questionários     │
-         │  (responder_questionario.html)  │
+         │  Questionário Obrigatório      │
+         │    (questionario.html)         │
          └────────────┬────────────────────┘
                       │
                       ▼
@@ -40,6 +34,12 @@
             └────────┬─────────┘
                      │
                      ▼
+          ┌────────────────────────┐
+          │  Gerar PDF + Enviar   │
+          │    Certificado Email  │
+          └────────────┬──────────┘
+                       │
+                       ▼
           ┌────────────────────────┐
           │  Página de Sucesso    │
           │ (agradecimento.html)  │
@@ -211,7 +211,7 @@ certificados/
 ├── templates/certificados/
 │   ├── questionario.html (Formulário)
 │   ├── agradecimento_questionario.html
-│   └── inscricao_sucesso.html (Modificado)
+│   └── inscricao.html (Texto do fluxo obrigatório)
 │
 ├── templates/admin/
 │   └── dashboard_index.html
@@ -306,9 +306,7 @@ Escala de Satisfação:
    ├─► Cria/atualiza Cliente
    ├─► Cria Inscricao
    ├─► Cria Certificado
-   ├─► Gera PDF
-   ├─► Envia email
-   └─► Renderiza inscricao_sucesso.html
+   └─► REDIRECT /certificado/{id}/questionario/
 
 3. GET /certificados/certificado/{id}/questionario/
    ├─► Obtem Certificado, Cliente, Curso
@@ -328,6 +326,8 @@ Escala de Satisfação:
    │   └─ Se aberta: usa valor direto
    ├─► CREATE ou UPDATE RespostaUsuario
    ├─► CREATE ItemRespostaUsuario para cada Pergunta
+   ├─► Gera PDF
+   ├─► Envia email do certificado
    └─► REDIRECT /certificado/{id}/agradecimento/
 
 5. GET /certificados/certificado/{id}/agradecimento/

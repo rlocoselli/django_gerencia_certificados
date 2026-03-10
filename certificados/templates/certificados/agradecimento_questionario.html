@@ -129,19 +129,31 @@
   <div class="agradecimento-header">
     <div class="agradecimento-icon">✅</div>
     <h1>Obrigado!</h1>
-    <p>Sua avaliação foi registrada com sucesso</p>
+    <p>Sua avaliação foi registrada com sucesso.</p>
   </div>
 
   <!-- Conteúdo -->
   <div class="agradecimento-content">
     <h2>Apreciamos seu feedback!</h2>
+
+    {% if email_status == 'pendente' %}
+    <div class="alert alert-warning" role="alert">
+      Recebemos suas respostas, mas não conseguimos confirmar o envio do certificado neste momento.
+      Nossa equipe fará uma nova tentativa para o e-mail <strong>{{ cliente.email }}</strong>.
+    </div>
+    {% else %}
+    <div class="mensagem-sucesso">
+      Seu certificado foi enviado para o e-mail <strong>{{ cliente.email }}</strong>.
+      Obrigado por responder ao questionário!
+    </div>
+    {% endif %}
     
     <p>
       Olá <strong>{{ cliente.nome }}</strong>,
     </p>
     
     <p>
-      Sua resposta ao questionário foi registrada com sucesso. Suas sugestões e opiniões são 
+      Sua resposta ao questionário foi registrada com sucesso. Suas sugestões e opiniões são
       extremamente valiosas para nós e nos ajudam a melhorar continuamente a qualidade de nossos 
       cursos e serviços.
     </p>
@@ -163,6 +175,6 @@
       Se você tiver alguma dúvida específica ou comentário adicional, não hesite em entrar em contato 
       conosco. Estamos sempre à disposição para ouvir você!
     </p>
-    
+  </div>
 </div>
 {% endblock %}
