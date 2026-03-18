@@ -83,6 +83,7 @@ def inscricao_publica(request):
                 'data_nascimento': form.cleaned_data['data_nascimento'],
                 'telefone': form.cleaned_data.get('telefone', ''),
                 'endereco': form.cleaned_data.get('endereco', ''),
+                'empresa': form.cleaned_data.get('empresa', ''),
             }
         )
 

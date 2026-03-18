@@ -15,7 +15,7 @@ class CertificadoForm(forms.ModelForm):
 class InscricaoPublicaForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['cpf', 'nome', 'email', 'data_nascimento', 'telefone', 'endereco', 'empresa']
+        fields = ['cpf', 'nome', 'email', 'data_nascimento', 'telefone', 'empresa']
         widgets = {
             'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
         }

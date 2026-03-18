@@ -113,4 +113,4 @@ else
 fi
 
 echo "==> Done. App should be reachable via https://$DOMAIN (or server IP if DOMAIN is '_')."
-
+systemctl restart django_gerencia_certificados
