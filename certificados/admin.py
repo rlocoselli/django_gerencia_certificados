@@ -7,9 +7,8 @@ from django.conf import settings
 from django.db.models import Count, Avg
 from django.template.response import TemplateResponse
 
-from .models import (Cliente, Curso, Certificado, CursoAgendamento, Inscricao,
+from .models import (Cliente, Curso, Certificado, CursoAgendamento, Inscricao, Instrutor,
                      Questionario, Pergunta, OpcaoResposta, RespostaUsuario, ItemRespostaUsuario)
-from .services import gerar_certificado_pdf_bytes, enviar_certificado_email, montar_url_inscricao, gerar_qr_code_base64_png
 
 
 @admin.register(Cliente)
@@ -22,6 +21,13 @@ class ClienteAdmin(admin.ModelAdmin):
 class CursoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'carga_horaria_padrao')
     search_fields = ('nome',)
+
+
+@admin.register(Instrutor)
+class InstrutorAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'cargo', 'email', 'ativo')
+    search_fields = ('nome', 'cargo', 'email')
+    list_filter = ('ativo',)
 
 
 class InscricaoInline(admin.TabularInline):
@@ -42,11 +48,11 @@ class InscricaoInline(admin.TabularInline):
 
 @admin.register(CursoAgendamento)
 class CursoAgendamentoAdmin(admin.ModelAdmin):
-    list_display = ('curso', 'data', 'id', 'qrcode_link')
-    list_filter = ('curso', 'data')
-    search_fields = ('curso__nome', 'id')
+    list_display = ('curso', 'instrutor', 'data', 'id', 'qrcode_link')
+    list_filter = ('curso', 'instrutor', 'data')
+    search_fields = ('curso__nome', 'instrutor__nome', 'id')
     readonly_fields = ('id', 'qrcode_preview', 'url_inscricao')
-    fields = ('id', 'curso', 'data', 'url_inscricao', 'qrcode_preview')
+    fields = ('id', 'curso', 'instrutor', 'data', 'url_inscricao', 'qrcode_preview')
     inlines = [InscricaoInline]
 
     def get_urls(self):

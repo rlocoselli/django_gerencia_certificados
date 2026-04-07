@@ -31,11 +31,37 @@ class Curso(models.Model):
 
     def __str__(self) -> str:
         return self.nome
+    
+ 
+    
+class Instrutor(models.Model):
+    nome = models.CharField('Nome', max_length=200)
+    cargo = models.CharField('Cargo', max_length=200, blank=True)
+    email = models.EmailField('E-mail', blank=True)
+    ativo = models.BooleanField('Ativo', default=True)
+
+    class Meta:
+        verbose_name = 'Instrutor'
+        verbose_name_plural = 'Instrutores'
+        ordering = ['nome']
+
+    def __str__(self) -> str:
+        return self.nome
 
 
 class CursoAgendamento(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     curso = models.ForeignKey(Curso, verbose_name='Curso', on_delete=models.PROTECT, related_name='agendamentos')
+
+    instrutor = models.ForeignKey(
+        Instrutor,
+        verbose_name='Instrutor',
+        on_delete=models.PROTECT,
+        related_name='agendamentos',
+        null=True,
+        blank=True
+    )
+
     data = models.DateField('Data do curso')
     criado_em = models.DateTimeField('Criado em', auto_now_add=True)
 
