@@ -3,6 +3,9 @@ from io import BytesIO
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.urls import reverse
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.utils import simpleSplit
+from reportlab.pdfbase.ttfonts import TTFont
 
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
@@ -76,6 +79,12 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     bg = ImageReader(template_path)
     c.drawImage(bg, 0, 0, width=page_w, height=page_h, mask="auto")
 
+    # Registrar fonte japonesa
+    fonte_japonesa_path = finders.find("certificados/fonts/NotoSansJP-Regular.ttf")
+    if fonte_japonesa_path:
+        pdfmetrics.registerFont(TTFont("NotoSansJP", fonte_japonesa_path))
+
+
     # 2) Textos por cima (AJUSTE FINO DE POSIÇÃO AQUI)
     # Observação: (0,0) é canto inferior esquerdo.
 
@@ -84,13 +93,35 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
-    # CURSO
-    c.setFont("Helvetica", 18)
-    c.drawCentredString(page_w / 2, 290, f"Participou do Workshop {curso.nome} com")
+   # WORKSHOP COM QUEBRA AUTOMÁTICA + SUPORTE A JAPONÊS
+    texto_workshop = f"Participou do Workshop {curso.nome} com"
 
-    # CARGA HORÁRIA
+    fonte_workshop = "NotoSansJP" if fonte_japonesa_path else "Helvetica"
+    tamanho_workshop = 18
+    largura_maxima = 900
+
+    linhas = simpleSplit(
+    texto_workshop,
+    fonte_workshop,
+    tamanho_workshop,
+    largura_maxima
+)
+
+    c.setFont(fonte_workshop, tamanho_workshop)
+
+    y_inicial = 290
+    espacamento = 24
+
+    for i, linha in enumerate(linhas):
+        c.drawCentredString(page_w / 2, y_inicial - (i * espacamento), linha)
+
+    # CARGA HORÁRIA (desce automaticamente)
     c.setFont("Helvetica", 16)
-    c.drawCentredString(page_w / 2, 265, f"carga de {carga} horas, realizado pela Lean Way Consulting")
+    c.drawCentredString(
+    page_w / 2,
+    y_inicial - (len(linhas) * espacamento),
+    f"carga de {carga} horas, realizado pela Lean Way Consulting"
+)
 
     # DATA ATUAL
     c.setFont("Helvetica", 14)
