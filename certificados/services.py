@@ -93,6 +93,20 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
 
     # NOME (bem grande, centralizado)
     c.setFillColor(colors.HexColor("#13375f"))
+
+    texto_workshop = f"Participou do Workshop {curso.nome}"
+
+    fonte_workshop = "Helvetica"
+    tamanho_workshop = 18
+    largura_maxima = 620
+
+    linhas = simpleSplit(
+        texto_workshop,
+        fonte_workshop,
+        tamanho_workshop,
+        largura_maxima
+)
+
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
