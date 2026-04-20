@@ -96,40 +96,30 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
-    # TEXTO WORKSHOP (COM CONTROLE TOTAL DE POSIÇÃO)
-    texto_workshop = f"Participou do Workshop {curso.nome}"
+   # WORKSHOP
+    c.setFont(fonte_workshop, tamanho_workshop)
 
-    fonte = "Helvetica"
-    tamanho = 18
-    largura_maxima = 620
+    y_inicial = 290
+    espacamento = 24
 
-    linhas = simpleSplit(texto_workshop, fonte, tamanho, largura_maxima)
-
-    c.setFont(fonte, tamanho)
-
-    # PONTO BASE CENTRAL
-    y_base = 300
-    espacamento = 22
-
-    # DESENHAR LINHAS DO WORKSHOP
     for i, linha in enumerate(linhas):
-        c.drawCentredString(page_w / 2, y_base - (i * espacamento), linha)
+        c.drawCentredString(page_w / 2, y_inicial - (i * espacamento), linha)
 
-    # LINHA "COM"
-    y_com = y_base - (len(linhas) * espacamento)
-    c.drawCentredString(page_w / 2, y_com, "com")
+    # POSIÇÃO FINAL DO BLOCO DO WORKSHOP
+    y_pos_final_workshop = y_inicial - (len(linhas) * espacamento)
 
-    # CARGA HORÁRIA
-    y_carga = y_com - 25
+    # CARGA HORÁRIA (logo abaixo do workshop)
+    y_carga = y_pos_final_workshop - 10
+
     c.setFont("Helvetica", 16)
     c.drawCentredString(
-        page_w / 2,
-        y_carga,
-        f"carga de {carga} horas, realizado pela Lean Way Consulting"
+    page_w / 2,
+    y_carga,
+    f"carga de {carga} horas, realizado pela Lean Way Consulting"
 )
 
-    # DATA DINÂMICA (SEMPRE ABAIXO DO TEXTO)
-    y_data = y_inicial - (len(linhas) * espacamento) - 40
+    # DATA (abaixo da carga, com espaçamento consistente)
+    y_data = y_carga - 30
 
     c.setFont("Helvetica", 14)
     c.drawCentredString(page_w / 2, y_data, data_formatada)
