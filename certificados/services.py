@@ -214,3 +214,4 @@ def enviar_certificado_email(certificado: Certificado, pdf_bytes: bytes) -> None
     # 202 = OK (Accepted)
     if r.status_code != 202:
         raise RuntimeError(f"Graph sendMail falhou: {r.status_code} - {r.text}")
+
