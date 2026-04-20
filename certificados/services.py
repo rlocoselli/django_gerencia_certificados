@@ -68,7 +68,7 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     data_formatada = data_atual.strftime("%d/%m/%Y")
 
     # 1) Background (template)
-    template_rel = "certificados/img/certificado_base.png"
+    template_rel = "certificados/certificados/img/certificado_base.png"
     template_path = finders.find(template_rel)
     if not template_path:
         raise FileNotFoundError(
@@ -80,12 +80,12 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     c.drawImage(bg, 0, 0, width=page_w, height=page_h, mask="auto")
 
     # Registrar fonte japonesa
-    fonte_japonesa_path = finders.find("certificados/fonts/NotoSansJP-Regular.ttf")
-    if not fonte_japonesa_path:
-        raise FileNotFoundError("Fonte japonesa não encontrada em certificados/fonts/NotoSansJP-Regular.ttf")
+    #fonte_japonesa_path = finders.find("certificados/certificados/fonts/NotoSansJP-Regular.ttf")
+    #if not fonte_japonesa_path:
+        #raise FileNotFoundError("Fonte japonesa não encontrada em certificados/fonts/NotoSansJP-Regular.ttf")
 
-    if "NotoSansJP" not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont("NotoSansJP", fonte_japonesa_path))
+    #if "NotoSansJP" not in pdfmetrics.getRegisteredFontNames():
+        #pdfmetrics.registerFont(TTFont("NotoSansJP", fonte_japonesa_path))
 
 
     # 2) Textos por cima (AJUSTE FINO DE POSIÇÃO AQUI)
@@ -96,10 +96,10 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
-  # WORKSHOP COM QUEBRA AUTOMÁTICA + SUPORTE A JAPONÊS
+  # WORKSHOP COM QUEBRA AUTOMÁTICA
     texto_workshop = f"Participou do Workshop {curso.nome} com"
 
-    fonte_workshop = "NotoSansJP"
+    fonte_workshop = "Helvetica"
     tamanho_workshop = 18
     largura_maxima = 620
 
@@ -116,9 +116,9 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     espacamento = 24
 
     for i, linha in enumerate(linhas):
-     c.drawCentredString(page_w / 2, y_inicial - (i * espacamento), linha)
+        c.drawCentredString(page_w / 2, y_inicial - (i * espacamento), linha)
 
-    # CARGA HORÁRIA (desce automaticamente)
+# CARGA HORÁRIA
     c.setFont("Helvetica", 16)
     c.drawCentredString(
     page_w / 2,
