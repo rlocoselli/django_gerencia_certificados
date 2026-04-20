@@ -96,31 +96,31 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
-  # WORKSHOP COM QUEBRA AUTOMÁTICA
-    texto_workshop = f"Participou do Workshop {curso.nome} com"
+    # TEXTO WORKSHOP (COM CONTROLE TOTAL DE POSIÇÃO)
+    texto_workshop = f"Participou do Workshop {curso.nome}"
 
-    fonte_workshop = "Helvetica"
-    tamanho_workshop = 18
+    fonte = "Helvetica"
+    tamanho = 18
     largura_maxima = 620
 
-    linhas = simpleSplit(
-    texto_workshop,
-    fonte_workshop,
-    tamanho_workshop,
-    largura_maxima
-)
+    linhas = simpleSplit(texto_workshop, fonte, tamanho, largura_maxima)
 
-    c.setFont(fonte_workshop, tamanho_workshop)
+    c.setFont(fonte, tamanho)
 
-    y_inicial = 290
-    espacamento = 24
+    # PONTO BASE CENTRAL
+    y_base = 300
+    espacamento = 22
 
+    # DESENHAR LINHAS DO WORKSHOP
     for i, linha in enumerate(linhas):
-        c.drawCentredString(page_w / 2, y_inicial - (i * espacamento), linha)
+        c.drawCentredString(page_w / 2, y_base - (i * espacamento), linha)
 
-   # CARGA HORÁRIA (ajustada dinamicamente)
-    y_carga = y_inicial - (len(linhas) * espacamento) - 18
+    # LINHA "COM"
+    y_com = y_base - (len(linhas) * espacamento)
+    c.drawCentredString(page_w / 2, y_com, "com")
 
+    # CARGA HORÁRIA
+    y_carga = y_com - 25
     c.setFont("Helvetica", 16)
     c.drawCentredString(
         page_w / 2,
@@ -128,11 +128,10 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
         f"carga de {carga} horas, realizado pela Lean Way Consulting"
 )
 
-    # DATA ATUAL (ajustada dinamicamente)
-    y_data = y_carga - 32
-
+    # DATA
+    y_data = y_carga - 28
     c.setFont("Helvetica", 14)
-    c.drawCentredString(page_w / 2, y_data, f"{data_formatada}")
+    c.drawCentredString(page_w / 2, y_data, data_formatada)
 
     c.showPage()
     c.save()
