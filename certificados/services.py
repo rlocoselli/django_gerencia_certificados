@@ -128,8 +128,9 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
         f"carga de {carga} horas, realizado pela Lean Way Consulting"
 )
 
-    # DATA
-    y_data = y_carga - 28
+    # DATA DINÂMICA (SEMPRE ABAIXO DO TEXTO)
+    y_data = y_inicial - (len(linhas) * espacamento) - 40
+
     c.setFont("Helvetica", 14)
     c.drawCentredString(page_w / 2, y_data, data_formatada)
 
