@@ -68,13 +68,13 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     data_formatada = data_atual.strftime("%d/%m/%Y")
 
     # 1) Background (template)
-    template_rel = "certificados/certificados/img/certificado_base.png"
+    template_rel = "certificados/img/certificado_base.png"
     template_path = finders.find(template_rel)
     if not template_path:
         raise FileNotFoundError(
-            f"Template não encontrado em static: {template_rel}. "
-            f"Verifique se o arquivo existe e se STATICFILES está configurado."
-        )
+        f"Template não encontrado em static: {template_rel}. "
+        f"Verifique se o arquivo existe e se STATICFILES está configurado."
+    )
 
     bg = ImageReader(template_path)
     c.drawImage(bg, 0, 0, width=page_w, height=page_h, mask="auto")
@@ -118,18 +118,21 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     for i, linha in enumerate(linhas):
         c.drawCentredString(page_w / 2, y_inicial - (i * espacamento), linha)
 
-# CARGA HORÁRIA
+   # CARGA HORÁRIA (ajustada dinamicamente)
+    y_carga = y_inicial - (len(linhas) * espacamento) - 18
+
     c.setFont("Helvetica", 16)
     c.drawCentredString(
-    page_w / 2,
-    y_inicial - (len(linhas) * espacamento),
-    f"carga de {carga} horas, realizado pela Lean Way Consulting"
+        page_w / 2,
+        y_carga,
+        f"carga de {carga} horas, realizado pela Lean Way Consulting"
 )
 
+    # DATA ATUAL (ajustada dinamicamente)
+    y_data = y_carga - 32
 
-    # DATA ATUAL
     c.setFont("Helvetica", 14)
-    c.drawCentredString(page_w / 2, 235, f"{data_formatada}")
+    c.drawCentredString(page_w / 2, y_data, f"{data_formatada}")
 
     c.showPage()
     c.save()

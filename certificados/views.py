@@ -194,8 +194,10 @@ def responder_questionario(request, certificado_id):
             try:
                 pdf_bytes = gerar_certificado_pdf_bytes(certificado)
                 enviar_certificado_email(certificado, pdf_bytes)
-            except Exception:
-                email_status = 'pendente'
+            except Exception as e:
+                print("ERRO AO GERAR/ENVIAR CERTIFICADO:", repr(e))
+            email_status = 'pendente'
+            raise
 
             agradecimento_url = reverse('certificados:agradecimento_questionario', args=[certificado_id])
             return redirect(f'{agradecimento_url}?email_status={email_status}')

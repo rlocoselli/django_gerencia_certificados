@@ -9,7 +9,7 @@ from django.template.response import TemplateResponse
 
 from .models import (Cliente, Curso, Certificado, CursoAgendamento, Inscricao, Instrutor,
                      Questionario, Pergunta, OpcaoResposta, RespostaUsuario, ItemRespostaUsuario)
-from .services import gerar_certificado_pdf_bytes, enviar_certificado_email, montar_url_inscricao, gerar_qr_code_base64_png
+from .services import montar_url_inscricao
 
 
 @admin.register(Cliente)
