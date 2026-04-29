@@ -80,10 +80,10 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
             base_dir / "static" / "certificados" / "certificados" / "img" / "certificado_base.png",
     ]
 
-    for caminho in candidatos:
-        if caminho.exists():
-            template_path = str(caminho)
-            break
+        for caminho in candidatos:
+            if caminho.exists():
+                template_path = str(caminho)
+                break
 
     if not template_path:
         raise FileNotFoundError(
