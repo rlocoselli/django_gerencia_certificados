@@ -87,8 +87,8 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
 
     if not template_path:
         raise FileNotFoundError(
-        f"Template não encontrado em static: {template_rel}. "
-        f"Verifique se o arquivo existe e se STATICFILES está configurado."
+            f"Template não encontrado em static: {template_rel}. "
+            f"Verifique se o arquivo existe e se STATICFILES está configurado."
 )
 
     bg = ImageReader(template_path)
