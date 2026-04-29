@@ -9,7 +9,7 @@ from django.template.response import TemplateResponse
 
 from .models import (Cliente, Curso, Certificado, CursoAgendamento, Inscricao, Instrutor,
                      Questionario, Pergunta, OpcaoResposta, RespostaUsuario, ItemRespostaUsuario)
-from .services import montar_url_inscricao
+from .services import montar_url_inscricao, gerar_certificado_pdf_bytes, enviar_certificado_email
 
 
 @admin.register(Cliente)
@@ -149,6 +149,27 @@ class CertificadoAdmin(admin.ModelAdmin):
     list_display = ('cliente', 'curso', 'agendamento', 'data_emissao', 'codigo')
     list_filter = ('curso', 'data_emissao')
     search_fields = ('cliente__nome', 'cliente__cpf', 'cliente__email', 'curso__nome', 'codigo')
+    actions = ['reenviar_certificados']
+
+    def reenviar_certificados(self, request, queryset):
+        enviados = 0
+        erros = 0
+
+        for certificado in queryset:
+            try:
+                pdf_bytes = gerar_certificado_pdf_bytes(certificado)
+                enviar_certificado_email(certificado, pdf_bytes)
+                enviados += 1
+            except Exception as exc:
+                print(f"ERRO AO REENVIAR CERTIFICADO {certificado.id}: {repr(exc)}")
+                erros += 1
+
+        if enviados:
+            messages.success(request, f"{enviados} certificado(s) reenviado(s) com sucesso.")
+        if erros:
+            messages.error(request, f"{erros} certificado(s) não puderam ser reenviados. Verifique o log do servidor.")
+
+    reenviar_certificados.short_description = "Reenviar certificados selecionados"
 
 
 # ========== Questionário e Avaliações ==========

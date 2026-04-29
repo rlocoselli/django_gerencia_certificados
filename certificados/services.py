@@ -6,6 +6,7 @@ from django.urls import reverse
 from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.utils import simpleSplit
 from reportlab.pdfbase.ttfonts import TTFont
+from pathlib import Path
 
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfgen import canvas
@@ -64,12 +65,26 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     except locale.Error:
         pass
 
-    data_atual = date.today()
+    data_atual = certificado.agendamento.data
     data_formatada = data_atual.strftime("%d/%m/%Y")
 
     # 1) Background (template)
     template_rel = "certificados/img/certificado_base.png"
     template_path = finders.find(template_rel)
+
+    if not template_path:
+     base_dir = Path(__file__).resolve().parent
+     candidatos = [
+        base_dir / "static" / "certificados" / "img" / "certificado_base.png",
+        base_dir / "static" / "certificados" / "certificado_base.png",
+        base_dir / "static" / "certificados" / "certificados" / "img" / "certificado_base.png",
+    ]
+
+    for caminho in candidatos:
+        if caminho.exists():
+            template_path = str(caminho)
+            break
+
     if not template_path:
         raise FileNotFoundError(
         f"Template não encontrado em static: {template_rel}. "
@@ -94,46 +109,27 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     # NOME (bem grande, centralizado)
     c.setFillColor(colors.HexColor("#13375f"))
 
-    texto_workshop = f"Participou do Workshop {curso.nome}"
+    linha1_workshop = f"Participou do Workshop {curso.nome}"
+    linha2_workshop = f"com carga horária de {carga} horas, realizado pela Lean Way Consulting"
 
     fonte_workshop = "Helvetica"
     tamanho_workshop = 18
-    largura_maxima = 620
-
-    linhas = simpleSplit(
-        texto_workshop,
-        fonte_workshop,
-        tamanho_workshop,
-        largura_maxima
-)
 
     c.setFont("Helvetica-Bold", 34)
     c.drawCentredString(page_w / 2, 330, cliente.nome)
 
    # WORKSHOP
+    y_inicial = 290
     c.setFont(fonte_workshop, tamanho_workshop)
 
-    y_inicial = 290
-    espacamento = 24
+    c.drawCentredString(page_w / 2, y_inicial, linha1_workshop)
+    c.drawCentredString(page_w / 2, y_inicial - 24, linha2_workshop)
 
-    for i, linha in enumerate(linhas):
-        c.drawCentredString(page_w / 2, y_inicial - (i * espacamento), linha)
+    y_pos_final_workshop = y_inicial - 24
 
-    # POSIÇÃO FINAL DO BLOCO DO WORKSHOP
-    y_pos_final_workshop = y_inicial - (len(linhas) * espacamento)
+    # DATA (abaixo do bloco do workshop, com espaçamento consistente)
+    y_data = y_pos_final_workshop - 40
 
-    # CARGA HORÁRIA (logo abaixo do workshop)
-    y_carga = y_pos_final_workshop - 10
-
-    c.setFont("Helvetica", 16)
-    c.drawCentredString(
-    page_w / 2,
-    y_carga,
-    f"carga de {carga} horas, realizado pela Lean Way Consulting"
-)
-
-    # DATA (abaixo da carga, com espaçamento consistente)
-    y_data = y_carga - 30
 
     c.setFont("Helvetica", 14)
     c.drawCentredString(page_w / 2, y_data, data_formatada)
