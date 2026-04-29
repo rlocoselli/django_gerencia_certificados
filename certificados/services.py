@@ -73,11 +73,11 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
     template_path = finders.find(template_rel)
 
     if not template_path:
-     base_dir = Path(__file__).resolve().parent
-     candidatos = [
-        base_dir / "static" / "certificados" / "img" / "certificado_base.png",
-        base_dir / "static" / "certificados" / "certificado_base.png",
-        base_dir / "static" / "certificados" / "certificados" / "img" / "certificado_base.png",
+        base_dir = Path(__file__).resolve().parent
+        candidatos = [
+            base_dir / "static" / "certificados" / "img" / "certificado_base.png",
+            base_dir / "static" / "certificados" / "certificado_base.png",
+            base_dir / "static" / "certificados" / "certificados" / "img" / "certificado_base.png",
     ]
 
     for caminho in candidatos:
@@ -89,7 +89,7 @@ def gerar_certificado_pdf_bytes(certificado: Certificado) -> bytes:
         raise FileNotFoundError(
         f"Template não encontrado em static: {template_rel}. "
         f"Verifique se o arquivo existe e se STATICFILES está configurado."
-    )
+)
 
     bg = ImageReader(template_path)
     c.drawImage(bg, 0, 0, width=page_w, height=page_h, mask="auto")
