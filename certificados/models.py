@@ -204,10 +204,15 @@ class RespostaUsuario(models.Model):
 
     @property
     def media_geral(self):
-        """Calcula a média geral de pontuação do questionário"""
-        itens = self.itens.filter(opcao_resposta__isnull=False)
+        """Calcula a média geral considerando apenas perguntas com pontuação avaliativa"""
+        itens = self.itens.filter(
+            opcao_resposta__isnull=False,
+            opcao_resposta__pontuacao__gt=0
+        )
+
         if not itens.exists():
             return 0
+
         total_pontuacao = sum(item.opcao_resposta.pontuacao for item in itens)
         return round(total_pontuacao / itens.count(), 2)
 
